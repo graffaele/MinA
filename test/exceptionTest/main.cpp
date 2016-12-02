@@ -29,14 +29,4 @@ int main(void)
     }
     cout << "counter = " << count << endl;
     return !(count == 10);
-    /*
-    cout << "counter before = " << count << endl;
-    try {
-        mina.minimize(badFunction, serialSimplex);
-    } catch (Arithmetical_Exception& ae) {
-        count++;
-    }
-    cout << "counter after = " << count << endl;
-    return 0;
-    */
 }
