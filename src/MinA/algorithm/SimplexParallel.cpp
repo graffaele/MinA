@@ -41,24 +41,26 @@ Result SimplexParallel::algorithm(shared_ptr<FunctionToBeOptimized> start)
             } // Evaluate(A)
             sort(A.begin(), A.end(),
                  [](vertex& a, vertex& b) -> bool { return a.second < b.second; });
-            // cout << "loop= " << currentIteration << endl;
-            // printOutVertices(A);
 
-            ofstream dataFile;
-            dataFile.open("z_SimplexParallel" + getFunctionName() + to_string(world_size),
-                          ios::app);
-            dataFile << currentIteration << endl;
-            printOutVertices(A, dataFile);
-            dataFile.close();
+            ofstream verticesFile;
+            string outFile_vertices("parallelSimplex_" + getFunctionName() + "_" +
+                                    to_string(world_size) + "_Vertices");
+            verticesFile.open(outFile_vertices, ios::app);
+            verticesFile << "  Iteration: " << currentIteration << endl;
+            printOutVertices(A, verticesFile);
+            verticesFile << endl;
+            verticesFile.close();
 
             vertex M = getCentroid(A, world_size); // Centroid
             M.second = mFunction->evaluate(M.first);
-            ofstream dataMean;
-            dataMean.open("z_mean" + to_string(world_size), ios::app);
-            dataMean << "Iteration= " << currentIteration << "	Mean= " << M.second
+            ofstream meanFile;
+            string outFile_mean("parallelSimplex_" + getFunctionName() + "_" +
+                                to_string(world_size) + "_Size");
+            meanFile.open(outFile_mean, ios::app);
+            meanFile << "Iteration= " << currentIteration << "	Mean= " << M.second
                      << "	SimplexSize =	" << getSimplexSize(A) << "	";
-            dataMean << endl;
-            dataMean.close();
+            meanFile << endl;
+            meanFile.close();
             mode = 1;
             for (int i = 1; i < world_size; i++) {
                 MPI_Send(&mode, 1, MPI_INT, i, world_size, MPI_COMM_WORLD);
@@ -95,17 +97,13 @@ Result SimplexParallel::algorithm(shared_ptr<FunctionToBeOptimized> start)
                     A[mDimension - world_size + i + 1] = b;
                 }
 
-            dataFile.open("z_SimplexParallel" + getFunctionName() + to_string(world_size),
-                          ios::app);
-            dataFile << currentIteration << endl;
-            printOutVertices(A, dataFile);
-            dataFile.close();
-
-            dataFile.open("z_dataParallel" + to_string(world_size), ios::app);
-            dataFile << "Iteration= " << currentIteration << "	f(A0)= " << A[0].second << "	";
-            printOutVertices(A, dataFile);
-            dataFile << "\n";
-            dataFile.close();
+            ofstream fValueFile;
+            string outFile_fValue("parallelSimplex_" + getFunctionName() + "_" +
+                                  to_string(world_size) + "_fValue");
+            fValueFile.open(outFile_fValue, ios::app);
+            fValueFile << "Iteration= " << currentIteration << "   ";
+            printOutVertex(A[0], "A[0]", fValueFile);
+            fValueFile.close();
             // save();
         }
 

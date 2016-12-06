@@ -18,9 +18,10 @@ int main(int argc, char** argv)
     int world_rank;
     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
 
-    shared_ptr<Simplex> nmSimplex(new Simplex(100));
+    shared_ptr<Simplex> nmSimplex(new Simplex(10));
     nmSimplex->setFunctionName("Square");
-    shared_ptr<SimplexParallel> parallelSimplex(new SimplexParallel(1000));
+    // shared_ptr<SimplexParallel> parallelSimplex(new SimplexParallel(1000));
+    shared_ptr<SimplexParallel> parallelSimplex(new SimplexParallel(10));
     parallelSimplex->setFunctionName("Square");
     parallelSimplex->setMetaParameter("beta", 0.2);
     parallelSimplex->setMetaParameter("tau", 0.2);
@@ -60,10 +61,12 @@ int main(int argc, char** argv)
     data.close();*/
 
     if (world_rank == 0)
-        cout << "function minimized value=" << mina.minimize(fGauss, parallelSimplex).result
-             << endl;
+        // cout << "function minimized value=" << mina.minimize(fGauss, parallelSimplex).result <<
+        // endl;
+        cout << "function minimized value=" << mina.minimize(fGauss, nmSimplex).result << endl;
     else
         auto rs = mina.minimize(fGauss, parallelSimplex);
+    // auto rs = mina.minimize(fGauss, nmSimplex);
     MPI_Finalize();
     return (0);
 }

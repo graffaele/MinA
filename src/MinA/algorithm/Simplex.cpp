@@ -1,5 +1,8 @@
 #include "MinA/algorithm/Simplex.h"
+//#include <boost/io/ios_state.hpp>
 using namespace std;
+
+constexpr int columnWidth = 8;
 
 Simplex::Simplex(int stop)
 {
@@ -31,7 +34,7 @@ Result Simplex::algorithm(shared_ptr<FunctionToBeOptimized> start)
     else {
         A = Acopy;
     }
-    cout << "Start with current loop= " << currentIteration << endl;
+    cout << "Start. Current iteration = " << currentIteration << endl;
     for (int i = 0; i <= mDimension; i++)
         checkBoundaryCondition(A[i]);
     while (checkStoppingCondition()) {
@@ -42,9 +45,16 @@ Result Simplex::algorithm(shared_ptr<FunctionToBeOptimized> start)
 
         sort(A.begin(), A.end(),
              [](vertex& a, vertex& b) -> bool { return a.second < b.second; }); // Sort
-        cout << "loop= " << currentIteration << endl;
-        printOutVertices(A);
-        int world_size = 2;
+        ofstream verticesFile;
+        string outFile_vertices("nmSimplex_" + getFunctionName() + "_Vertices");
+        verticesFile.open(outFile_vertices, ios::app);
+        verticesFile << "  Iteration: " << currentIteration << endl;
+        printOutVertices(A, verticesFile);
+        verticesFile << endl;
+        verticesFile.close();
+
+        // get centroid
+        int world_size = 1;
         vertex M = getCentroid(A, world_size);
 
         int check = 0;
@@ -88,14 +98,12 @@ Result Simplex::algorithm(shared_ptr<FunctionToBeOptimized> start)
         Acopy = A;
         // save();
 
-        ofstream dataFile;
-        dataFile.open("Simplex" + getFunctionName(), ios::app);
-        dataFile << "Iteration= " << currentIteration << "	f(A0)= " << A[0].second << "	";
-        for (int iPar = 0; iPar < mDimension; ++iPar)
-            dataFile << mFunction->mParameters[iPar].getName() << " = " << A[0].first[iPar]
-                     << "	";
-        dataFile << "\n";
-        dataFile.close();
+        ofstream fValueFile;
+        string outFile_fValue("nmSimplex_" + getFunctionName() + "_fValue");
+        fValueFile.open(outFile_fValue, ios::app);
+        fValueFile << "Iteration " << setw(5) << currentIteration << "   ";
+        printOutVertex(A[0], "A[0]", fValueFile);
+        fValueFile.close();
     }
 
     // Return result*/
@@ -159,6 +167,11 @@ void Simplex::checkBoundaryCondition(vertex& A)
 void Simplex::printOutVertices(verticesVector& simplexVertices, ostream& outStream)
 {
     // Print out parameter values and function value at each vertex
+    // boost::io::ios_all_saver guard(cout); // Saves current flags and format
+    outStream << setw(columnWidth) << "";
+    for (int iPar = 0; iPar < mDimension; ++iPar)
+        outStream << setw(columnWidth) << mFunction->mParameters[iPar].getName();
+    outStream << endl;
     for (int iVertex = 0; iVertex <= mDimension; ++iVertex) {
         string vertexName{ "A[" };
         vertexName += to_string(iVertex);
@@ -170,10 +183,13 @@ void Simplex::printOutVertices(verticesVector& simplexVertices, ostream& outStre
 void Simplex::printOutVertex(vertex& simplexVertex, string vertexName, ostream& outStream)
 {
     // Print out parameters and function value at vertex
+    // outStream << setw(columnWidth - 2) << vertexName << ":  ";
+    outStream << setw(columnWidth) << vertexName;
+    outStream << setprecision(2);
     for (int iPar = 0; iPar < mDimension; ++iPar) {
-        cout << mFunction->mParameters[iPar].getName() << "=" << simplexVertex.first[iPar] << " ";
+        outStream << setw(columnWidth) << simplexVertex.first[iPar];
     }
-    outStream << "f(" << vertexName << ")=" << simplexVertex.second << endl;
+    outStream << "   f(" << vertexName << ")=" << simplexVertex.second << endl;
 }
 
 void Simplex::pushResult(Result& rs, vertex& A)
@@ -207,17 +223,18 @@ void Simplex::initializeVertices(verticesVector& A)
 
 vertex Simplex::getCentroid(verticesVector& A, int world_size)
 {
-    // Return centroid M of the best mDimension-world_size vertices of the vector of vertices A
+    // Return centroid M of the best (mDimension + 1 -world_size) vertices of the vector of vertices
+    // A
     // Ar = M + alpha * (M - Aj)
     // The vertices of A are supposed to be already ordered by function value, from best to worst
     //
     vertex M;
     M.first.resize(mDimension);
     for (int iPar = 0; iPar < mDimension; ++iPar) {
-        for (int iVertex = 0; iVertex < mDimension - world_size + 2; ++iVertex) {
+        for (int iVertex = 0; iVertex < (mDimension + 1 - world_size); ++iVertex) {
             M.first[iPar] += A[iVertex].first[iPar];
         }
-        M.first[iPar] /= (mDimension - world_size + 2);
+        M.first[iPar] /= (mDimension + 1 - world_size);
     }
     M.second = mFunction->evaluate(M.first);
     return M;
