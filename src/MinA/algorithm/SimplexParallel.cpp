@@ -27,10 +27,13 @@ Result SimplexParallel::algorithm(shared_ptr<FunctionToBeOptimized> start)
         A = Acopy;
     }
 
-    int world_rank;
-    MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+    // Get the number of processes
     int world_size;
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+    // Get the rank of the process
+    int world_rank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+
     if (world_rank == 0) {
         int mode;
 
@@ -51,8 +54,10 @@ Result SimplexParallel::algorithm(shared_ptr<FunctionToBeOptimized> start)
             verticesFile << endl;
             verticesFile.close();
 
-            vertex M = getCentroid(A, world_size); // Centroid
+            // Centroid of the simplex, excluding world_size vertices
+            vertex M = getCentroid(A, world_size);
             M.second = mFunction->evaluate(M.first);
+
             ofstream meanFile;
             string outFile_mean("parallelSimplex_" + getFunctionName() + "_" +
                                 to_string(world_size) + "_Size");

@@ -53,9 +53,8 @@ Result Simplex::algorithm(shared_ptr<FunctionToBeOptimized> start)
         verticesFile << endl;
         verticesFile.close();
 
-        // get centroid
-        int world_size = 1;
-        vertex M = getCentroid(A, world_size);
+        // get centroid of all vertices but the worst one
+        vertex M = getCentroid(A, 1);
 
         int check = 0;
         Ar = getReflectedPoint(M, A[mDimension]);
@@ -221,20 +220,21 @@ void Simplex::initializeVertices(verticesVector& A)
     }
 }
 
-vertex Simplex::getCentroid(verticesVector& A, int world_size)
+vertex Simplex::getCentroid(verticesVector& A, int nExcluded)
 {
-    // Return centroid M of the best (mDimension + 1 -world_size) vertices of the vector of vertices
-    // A
-    // Ar = M + alpha * (M - Aj)
+    // Return centroid M of all vertices, but the nExcluded worst ones, that is the centroid of
+    // the best (mDimension + 1 - nExcluded) vertices of the vector of vertices A
+    // In the serial case the centroid is calculated on mDimension vertices, that is all but
+    // the worst one.
     // The vertices of A are supposed to be already ordered by function value, from best to worst
     //
     vertex M;
     M.first.resize(mDimension);
     for (int iPar = 0; iPar < mDimension; ++iPar) {
-        for (int iVertex = 0; iVertex < (mDimension + 1 - world_size); ++iVertex) {
+        for (int iVertex = 0; iVertex < (mDimension + 1 - nExcluded); ++iVertex) {
             M.first[iPar] += A[iVertex].first[iPar];
         }
-        M.first[iPar] /= (mDimension + 1 - world_size);
+        M.first[iPar] /= (mDimension + 1 - nExcluded);
     }
     M.second = mFunction->evaluate(M.first);
     return M;
@@ -323,7 +323,7 @@ double Simplex::getSimplexSize(verticesVector& simplexVertices)
 {
     // calculate the simplex size as the average vertex-centroid distance
     double simplexSize = 0.;
-    vertex M = getCentroid(simplexVertices, 1); // the centroid
+    vertex M = getCentroid(simplexVertices, 0); // the centroid of the simplex, no vertex excluded
 
     for (int iVertex = 0; iVertex <= mDimension; ++iVertex) { // loop over vertices
         double vertexCentroidDistance = 0.;

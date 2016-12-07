@@ -39,7 +39,7 @@ class Simplex : public OptimizationAlgorithm {
     bool checkStoppingCondition();
     void pushResult(Result& rs, vertex& A);
     void initializeVertices(verticesVector& A);
-    vertex getCentroid(verticesVector& A, int world_size);
+    vertex getCentroid(verticesVector& A, int nExcluded);
     vertex getReflectedPoint(vertex& M, vertex& Aj);
     vertex getExtendedPoint(vertex& M, vertex& Ar);
     virtual vertex getContractedPoint(vertex& M, vertex& Ajp);
