@@ -61,12 +61,10 @@ int main(int argc, char** argv)
     data.close();*/
 
     if (world_rank == 0)
-        // cout << "function minimized value=" << mina.minimize(fGauss, parallelSimplex).result <<
-        // endl;
-        cout << "function minimized value=" << mina.minimize(fGauss, nmSimplex).result << endl;
+        cout << "function minimized value=" << mina.minimize(fGauss, parallelSimplex).result << endl;
     else
         auto rs = mina.minimize(fGauss, parallelSimplex);
-    // auto rs = mina.minimize(fGauss, nmSimplex);
+
     MPI_Finalize();
     return (0);
 }

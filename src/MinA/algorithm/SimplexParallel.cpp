@@ -86,13 +86,11 @@ Result SimplexParallel::algorithm(shared_ptr<FunctionToBeOptimized> start)
             }
             if (sumcheck == 0) {
                 for (int i = 1; i < mDimension - world_size + 1; i++) {
-                    vertex Anew = getShrinkedPoint(A[i], A[0]);
-                    A[i] = Anew;
+                    A[i] = getShrinkedPoint(A[i], A[0]);
                 }
                 for (int i = 1; i < world_size; i++) {
                     vertex b = receiveVertex(i, i);
-                    vertex Anew = getShrinkedPoint(b, A[0]);
-                    A[mDimension - world_size + i + 1] = Anew;
+                    A[mDimension - world_size + i + 1] = getShrinkedPoint(b, A[0]);
                 }
             } // case 4
             else
@@ -204,6 +202,7 @@ void SimplexParallel::sendVertex(vertex& An, int receiver, int tag)
 vertex SimplexParallel::receiveVertex(int sender, int tag)
 {
     vertex An;
+    An.first.resize(mDimension);
     double Ad[mDimension];
     MPI_Recv(&(Ad[0]), mDimension, MPI_DOUBLE, sender, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 

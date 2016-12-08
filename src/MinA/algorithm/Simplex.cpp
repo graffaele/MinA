@@ -1,5 +1,4 @@
 #include "MinA/algorithm/Simplex.h"
-//#include <boost/io/ios_state.hpp>
 using namespace std;
 
 constexpr int columnWidth = 8;
@@ -166,7 +165,6 @@ void Simplex::checkBoundaryCondition(vertex& A)
 void Simplex::printOutVertices(verticesVector& simplexVertices, ostream& outStream)
 {
     // Print out parameter values and function value at each vertex
-    // boost::io::ios_all_saver guard(cout); // Saves current flags and format
     outStream << setw(columnWidth) << "";
     for (int iPar = 0; iPar < mDimension; ++iPar)
         outStream << setw(columnWidth) << mFunction->mParameters[iPar].getName();
@@ -194,7 +192,7 @@ void Simplex::printOutVertex(vertex& simplexVertex, string vertexName, ostream& 
 void Simplex::pushResult(Result& rs, vertex& A)
 {
     for (int iPar = 0; iPar < mDimension; ++iPar) {
-        rs.optimizationParameter.insert({ mFunction->mParameters[iPar].getName(), A.first[iPar] });
+        rs.optimizationParameter[mFunction->mParameters[iPar].getName()] = A.first[iPar];
     }
     rs.result = A.second;
 }
